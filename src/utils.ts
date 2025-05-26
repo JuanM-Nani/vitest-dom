@@ -354,41 +354,26 @@ type ValueType =
 
 // get the type of a value with handling the edge cases like `typeof []`
 // and `typeof null`
-export function getType(value: unknown): ValueType {
-  if (value === undefined) {
-    return "undefined";
-  } else if (value === null) {
-    return "null";
-  } else if (Array.isArray(value)) {
-    return "array";
-  } else if (typeof value === "boolean") {
-    return "boolean";
-  } else if (typeof value === "function") {
-    return "function";
-  } else if (typeof value === "number") {
-    return "number";
-  } else if (typeof value === "string") {
-    return "string";
-  } else if (typeof value === "bigint") {
-    return "bigint";
-  } else if (typeof value === "object") {
-    if (value != null) {
-      if (value.constructor === RegExp) {
-        return "regexp";
-      } else if (value.constructor === Map) {
-        return "map";
-      } else if (value.constructor === Set) {
-        return "set";
-      } else if (value.constructor === Date) {
-        return "date";
-      }
-    }
-    return "object";
-  } else if (typeof value === "symbol") {
-    return "symbol";
-  }
 
-  throw new Error(`value of unknown type: ${value}`);
+
+// not all the primitives
+const PRIMITIVE_TYPES = new Set(["boolean", "bigint", "number", "function", "string", "symbol"])
+
+function getObjectConstructor(value: object) {
+  if (value.constructor === RegExp) return "regexp";
+  if (value.constructor === Map) return "map";
+  if (value.constructor === Set) return "set";
+  if (value.constructor === Date) return "date";
+
+  return "object" as ValueType
+}
+
+export function getType(value: unknown): ValueType{
+  if (PRIMITIVE_TYPES.has(value)) return value;
+  if (Array.isArray(value)) return "array";
+  if (value === null) return "null";
+  if (value === undefined) return "undefined";
+  if (typeof value === "object") getObjectConstructor(value)
 }
 
 export const isPrimitive = (value: unknown): boolean => Object(value) !== value;
